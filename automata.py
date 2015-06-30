@@ -73,7 +73,7 @@ if(fail_count>=3):
     reboot
 
 s = os.popen("resolvconf -d wlan0").read()
-s = os.popen("resolvconf -a ppp0 < /home/pi/vpn_dns").rad()
+s = os.popen("resolvconf -a ppp0 < /home/pi/vpn_dns").read()
 s = os.popen("/etc/init.d/ntp stop").read()
 s = os.popen("ntpdate -u time.windows.com").read()
 
