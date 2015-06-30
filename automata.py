@@ -87,8 +87,8 @@ while(1):
         break
     stop.close()
     s = os.popen("ifconfig").read()
-    #if 'ppp0' in s:
-    #    s = os.popen("poff shinez")
+    if 'ppp0' in s:
+        s = os.popen("poff shinez")
     #if '172' in s:
     #    s = os.popen("dhclient wlan0 -r")
     s = os.popen("ifconfig wlan0 down").read()
@@ -116,6 +116,7 @@ while(1):
     #ensure wlan0 Managed
     while(fail_count<=3):
         s = os.popen("iwconfig wlan0 mode managed").read()
+        time.sleep(1)
         res = os.popen("iwconfig").read()
         if 'Managed' in res:
             fail_count = 0
@@ -128,7 +129,7 @@ while(1):
         f.close()
         time.sleep(2)
         os.popen("reboot")
-    s = os.popen("/etc/init.d/networking restart").read()
+    #s = os.popen("/etc/init.d/networking restart").read()
     s = os.popen("iwconfig wlan0 essid NJU-WLAN").read()
     s = os.popen("ifconfig wlan0 up").read()
     #ensure wifi connected
