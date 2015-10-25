@@ -10,7 +10,7 @@ msg['From']     = "diamondzyy@sina.cn"
 msg['To']       = "1058149101@qq.com"
 msg['Subject']  = "ip_info"
 
-with open('mac_addrs.txt') as f:
+with open('/home/pi/rpi_sniff2.0/mac_addrs.txt') as f:
     msg.attach(MIMEText(f.read()))
 
 smtp = smtplib.SMTP()

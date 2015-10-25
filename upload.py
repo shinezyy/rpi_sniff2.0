@@ -12,7 +12,7 @@ def upload_post(data_dict):
     response = urllib2.urlopen(req)
 
 def main():
-    with open('data.json','r') as f:
+    with open('/home/pi/rpi_sniff2.0/data.json','r') as f:
         data = json.load(f)
     print data
 if __name__ == '__main__':

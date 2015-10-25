@@ -46,20 +46,20 @@ def upload_mac():
     out = ''
     for dev in device_list:
         out = out + dev.myprint() +'\n'
-    with open('mac_addrs.txt','w') as out0:
+    with open('/home/pi/rpi_sniff2.0/mac_addrs.txt','w') as out0:
         print >>out0,out
 
     #upload to server
     mac_list = []
     for dev in device_list:
         data = dict()
-        data['pi_id'] = '69'
-        data['mac_addr'] = dev.mac_addr
-        data['SSI'] = dev.strength
+        data['no'] = '69'
+        data['mac'] = dev.mac_addr
+        data['ssi'] = dev.strength
         data['time'] = dev.last_detected_time
         mac_list.append(data)
     #upload_post(data)
-    with open ('data.json','w') as f:
+    with open ('/home/pi/rpi_sniff2.0/data.json','w') as f:
         json.dump(mac_list,f)
 
 def main():
