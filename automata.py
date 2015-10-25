@@ -1,4 +1,4 @@
-#！/usr/bin/python
+#!/usr/bin/python
 
 import os
 import subprocess
@@ -11,7 +11,7 @@ while(1):
     if 'ppp0' in s:
         s = os.popen("poff shinez")
     if '172.26' in s:
-        s = os.popen("dhclient wlan0")
+        s = os.popen("dhclient wlan0 -r")
     s = os.popen("ifconfig wlan0 down")
     time.sleep(1)
     #ensure wlan0 Monitor

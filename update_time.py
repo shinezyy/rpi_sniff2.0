@@ -8,4 +8,4 @@ def get_current_time():
 MINUTE_TIME_FORMAT = '%X'
 
 def get_current_minute():
-    return time.time() / 3
+    return time.time()

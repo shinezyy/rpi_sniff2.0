@@ -11,7 +11,7 @@ from devices import device
 PROBE_REQUEST_TYPE=0
 PROBE_REQUEST_SUBTYPE=4
 update_interval = 100 #minute
-gathering_time = 6
+gathering_time = 60
 
 device_list = []
 
@@ -37,7 +37,7 @@ def mac_gather(ifc):
 def del_outdated_device():
     current_time = get_current_minute()
     for dev in device_list:
-        if(current_time - dev.last_ditected_time > update_interval):
+        if(current_time - dev.last_detected_time > update_interval):
             device_list.remove(dev)
 
 def upload_mac():
@@ -56,6 +56,7 @@ def upload_mac():
         data['pi_id'] = '69'
         data['mac_addr'] = dev.mac_addr
         data['SSI'] = dev.strength
+        data['time'] = dev.last_detected_time
         mac_list.append(data)
     #upload_post(data)
     with open ('data.json','w') as f:
