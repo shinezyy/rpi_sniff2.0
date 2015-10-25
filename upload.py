@@ -5,8 +5,8 @@ import urllib2
 import json
 
 def upload_post(data_dict):
-    #url = 'http://raspberrypiserver.sinaapp.com/update/'
-    url = 'http://192.168.1.117:8000/update/'
+    url = 'http://3.raspberrypiserver.sinaapp.com/trainer/pi/'
+    #url = 'http://192.168.1.117:8000/update/'
     data_str = urllib.urlencode(data_dict)
     req = urllib2.Request(url,data_str)
     response = urllib2.urlopen(req)
@@ -14,6 +14,8 @@ def upload_post(data_dict):
 def main():
     with open('/home/pi/rpi_sniff2.0/data.json','r') as f:
         data = json.load(f)
-    print data
+    for data_dict in data:
+        #print data_dict
+        upload_post(data_dict)
 if __name__ == '__main__':
     main()

@@ -4,6 +4,7 @@ import os
 import subprocess
 import time
 
+
 fail_count = 0
 f = open('/home/pi/rpi_sniff2.0/log.txt','a')
 
@@ -128,7 +129,7 @@ while(1):
         time.sleep(59)
         s = os.popen("reboot")
     #send
-    s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
-    #s = os.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py")
+    #s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
+    s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/upload.py",shell = True)
     #time.sleep(10)
 

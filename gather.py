@@ -12,6 +12,7 @@ PROBE_REQUEST_TYPE=0
 PROBE_REQUEST_SUBTYPE=4
 update_interval = 100 #minute
 gathering_time = 60
+pi_id = 1
 
 device_list = []
 
@@ -53,7 +54,7 @@ def upload_mac():
     mac_list = []
     for dev in device_list:
         data = dict()
-        data['no'] = '69'
+        data['no'] = pi_id
         data['mac'] = dev.mac_addr
         data['ssi'] = dev.strength
         data['time'] = dev.last_detected_time
