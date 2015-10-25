@@ -11,7 +11,7 @@ from devices import device
 PROBE_REQUEST_TYPE=0
 PROBE_REQUEST_SUBTYPE=4
 update_interval = 100 #minute
-gathering_time = 30
+gathering_time = 6
 
 device_list = []
 
