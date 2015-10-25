@@ -6,9 +6,15 @@ import time
 
 
 fail_count = 0
-f = open('/home/pi/rpi_sniff2.0/log.txt','a')
+f = open('/home/pi/rpi_sniff2.0/log.txt','w')
+stop = open('/home/pi/rpi_sniff2.0/stop.txt');
 
 while(1):
+    line = stop.readline()
+    if '1' in line:
+        f.close()
+        stop.close()
+        break
     s = os.popen("ifconfig").read()
     if 'ppp0' in s:
         s = os.popen("poff shinez")
