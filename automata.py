@@ -159,7 +159,7 @@ while(1):
         s = os.popen("reboot")
 
     f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f,write('is going to dhclient')
+    f.write('is going to dhclient')
     f.close()
 
     with open('/home/pi/rpi_sniff2.0/log.txt') as log:
