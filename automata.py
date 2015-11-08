@@ -41,6 +41,7 @@ if(fail_count>=3):
     time.sleep(time2reboot)
     s = os.popen("reboot")
 
+os.popen("ip route > /home/pi/rpi_sniff2.0/route_boot1_log.txt")
 #ensure connect vpn:
 while(fail_count<=3):
     s = os.popen("pon shinez").read()
@@ -58,6 +59,7 @@ if(fail_count>=3):
     time.sleep(time2reboot)
     s = os.popen("reboot")
 os.popen("ifconfig > /home/pi/rpi_sniff2.0/if_boot_log.txt")
+os.popen("ip route > /home/pi/rpi_sniff2.0/route_boot2_log.txt")
 #set route
 s = os.popen("ip route del default").read()
 while(fail_count<=3):
@@ -160,15 +162,21 @@ while(1):
         s = os.popen("reboot")
 
     f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('is going to dhclient')
+    f.write('is going to dhclient\n')
     f.close()
 
-    with open('/home/pi/rpi_sniff2.0/log.txt') as log:
-        log.write('dhclient wlan0 -r\n')
     s = os.popen("dhclient wlan0 -r").read()
+
+    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
+    f.write('finished  dhclient -r\n')
+    f.close()
+
     s = os.popen("dhclient wlan0").read()
-    with open('/home/pi/rpi_sniff2.0/log.txt') as log:
-        log.write('dhcliented wlan0\n')
+
+    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
+    f.write('finished  dhclient wlan0\n')
+    f.close()
+
     #ensure gain ip
     while(fail_count<=3):
         s = os.popen("ifconfig").read()
@@ -196,6 +204,7 @@ while(1):
     #s = os.popen("ip route add 114.212.0.0/16 dev wlan0")
     #time.sleep(0.5)
 
+    '''
     #set wlan0 route
     s = os.popen("ip route del default").read()
     while(fail_count<=3):
@@ -214,6 +223,7 @@ while(1):
         f.close()
         time.sleep(time2reboot)
         s = os.popen("reboot")
+    '''
 
     #ensure being able to ping server
     while(fail_count<=6):
