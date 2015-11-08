@@ -12,11 +12,7 @@ PROBE_REQUEST_TYPE=0
 PROBE_REQUEST_SUBTYPE=4
 update_interval = 100 #minute
 gathering_time = 60
-<<<<<<< HEAD
 pi_id = 1
-=======
-pi_id = 5
->>>>>>> fddd19ce69a245f5600ac4836618ff87e159e05c
 
 device_list = []
 
