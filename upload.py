@@ -37,6 +37,6 @@ def upload():
     for data_dict in data:
         print 'Is uploading', data_dict
         if send_to_server:
-            return upload_post(data_dict)
+            ret = upload_post(data_dict)
     return True, ''
 

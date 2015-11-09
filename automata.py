@@ -52,7 +52,6 @@ def connect_wifi():
         return True, ''
     # not connected yet
     os.popen("iwconfig wlan0 essid NJU-WLAN").read()
-    # os.popen("iwconfig wlan0 essid Feixun_6ACE60").read()
     time.sleep(wifi_waiting_interval)
     ret = os.popen('iwconfig').read()
     if 'Not-Associated' not in ret:
@@ -99,15 +98,15 @@ def release_ip():
 
 
 def turn_down_wireless_card():
-    os.popen("ifconfig wlan0 down").read()
+    os.popen("ifconfig wlan1 down").read()
 
 
 def turn_on_wireless_card():
-    os.popen("ifconfig wlan0 up").read()
+    os.popen("ifconfig wlan1 up").read()
 
 
 def switch_monitor_mode():
-    ret1 = os.popen("iwconfig wlan0 mode monitor").read()
+    ret1 = os.popen("iwconfig wlan1 mode monitor").read()
     ret2 = os.popen("iwconfig").read()
     if 'Monitor' in ret2:
         return True, ''
@@ -116,7 +115,7 @@ def switch_monitor_mode():
 
 
 def switch_managed_mode():
-    ret1 = os.popen("iwconfig wlan0 mode managed").read()
+    ret1 = os.popen("iwconfig wlan1 mode managed").read()
     ret2 = os.popen("iwconfig").read()
     if 'Managed' in ret2:
         return True, ''
@@ -149,36 +148,29 @@ def try_with_restart(func, times, handle=None):
 
 
 def main():
+    turn_down_wireless_card()
+    try_with_restart(switch_monitor_mode, 3)
+    turn_on_wireless_card()
+
+    # connect wifi
+    try_with_restart(connect_wifi, 5)
+    # get ip
+    try_with_restart(get_ip, 5)
+
     while True:
         if stop():
             break
-        release_ip()
-
-        turn_down_wireless_card()
-        try_with_restart(switch_monitor_mode, 3)
-        turn_on_wireless_card()
 
         # start sniff
         subprocess.call('/usr/bin/python '+work_dir+'gather.py', shell=True)
         log_to_file('Gathered mac addresses')
 
-        turn_down_wireless_card()
-        try_with_restart(switch_managed_mode, 3)
-        turn_on_wireless_card()
-
-        # connect wifi
-        try_with_restart(connect_wifi, 5)
-        # get ip
-        try_with_restart(get_ip, 5)
 
         # send to server
         # s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
-
         time.sleep(1)
         log_to_file('Is going to upload')
-        try_with_restart(upload, 3, connect_wifi)
-        try_with_restart(upload, 3, get_ip)
-            
+        try_with_restart(upload, 5)
 
 
 if __name__ == '__main__':
