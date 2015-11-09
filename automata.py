@@ -170,7 +170,7 @@ def main():
         # s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
         time.sleep(1)
         log_to_file('Is going to upload')
-        try_with_restart(upload, 5)
+        try_with_restart(upload, 3)
 
 
 if __name__ == '__main__':
