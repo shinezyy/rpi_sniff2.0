@@ -4,6 +4,7 @@ import os
 import subprocess
 import time
 from config import *
+from upload import upload
 
 time_before_reboot = 30
 
@@ -20,7 +21,7 @@ fault_level = 'no fault'
 wifi_waiting_interval = 5
 
 
-def try_many_times(func, times):
+def try_many_times(func, times, handle=None):
     # func: return bool, string
     # bool to indicate whether successfully done
     # string to Error dump
@@ -32,6 +33,8 @@ def try_many_times(func, times):
         suc, error_msg = func()
         if suc:
             return True
+        elif handle:
+            handle()
     if not suc:
         with open(error_dump_file, 'w') as edf:
             print >> edf, error_msg
@@ -126,19 +129,22 @@ def network_restart():
 
 
 def reboot():
-    time.sleep(time_before_reboot)
+    if PC_test:
+        log_to_file('Stop because of too many errors!')
+        return
     log_to_file('Is going to reboot')
+    time.sleep(time_before_reboot)
     os.popen('reboot')
 
 
-def try_with_restart(func, times):
+def try_with_restart(func, times, handle=None):
     if not try_many_times(func, times):
         network_restart()
-        if not try_many_times(func, 3):
+        if handle:
+            handle()
+        if not try_many_times(func, times):
             reboot()
 
-# connect wifi
-# get ip
 # get time
 
 
@@ -170,8 +176,9 @@ def main():
 
         time.sleep(1)
         log_to_file('Is going to upload')
-        subprocess.call('/usr/bin/python ' + work_dir + 'upload.py', shell=True)
-        log_to_file('Uploaded')
+        try_with_restart(upload, 3, connect_wifi)
+        try_with_restart(upload, 3, get_ip)
+            
 
 
 if __name__ == '__main__':
