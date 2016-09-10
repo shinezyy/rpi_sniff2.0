@@ -4,6 +4,7 @@ import urllib
 import urllib2
 import json
 
+
 def upload_post(data_dict):
     try:
         url = 'http://3.raspberrypiserver.sinaapp.com/trainer/pi/'
@@ -22,5 +23,7 @@ def main():
     for data_dict in data:
         print data_dict
         upload_post(data_dict)
+
+
 if __name__ == '__main__':
     main()

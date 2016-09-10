@@ -1,7 +1,5 @@
 from scapy.all import *
 from threading import Thread
-from Queue import Queue
-import sys
 import json
 
 from update_time import get_current_minute
@@ -12,45 +10,59 @@ PROBE_REQUEST_TYPE=0
 PROBE_REQUEST_SUBTYPE=4
 update_interval = 100 #minute
 gathering_time = 60
+PC_test = True
 pi_id = 1
 
 device_list = []
 
-def PacketHandler(pkt):
+
+def packet_handler(pkt):
     if pkt.haslayer(Dot11):
         if pkt.type == PROBE_REQUEST_TYPE and pkt.subtype == PROBE_REQUEST_SUBTYPE:
             add2list(pkt)
+
 
 def add2list(pkt):
     stre = -(256-ord(pkt.notdecoded[-4]))
     dev_found = False
     for dev in device_list:
         if pkt.addr2 == dev.mac_addr:
-            dev.update(stre,get_current_minute(),get_current_time())
+            dev.update(stre,get_current_minute(), get_current_time())
             dev_found = True
             break
-    if dev_found == False:
-        device_list.append(device(stre,get_current_minute(),get_current_time(),pkt.addr2))
+    if not dev_found:
+        device_list.append(device(stre, get_current_minute(), get_current_time(), pkt.addr2))
+
 
 def mac_gather(ifc):
-    sniff(iface=ifc,prn=PacketHandler,timeout=gathering_time)
+    sniff(iface=ifc, prn=packet_handler, timeout=gathering_time)
+
 
 def del_outdated_device():
     current_time = get_current_minute()
     for dev in device_list:
-        if(current_time - dev.last_detected_time > update_interval):
+        if current_time - dev.last_detected_time > update_interval:
             device_list.remove(dev)
 
-def upload_mac():
-    time.sleep(gathering_time)
-    #output to local file
-    out = ''
-    for dev in device_list:
-        out = out + dev.myprint() +'\n'
-    with open('/home/pi/rpi_sniff2.0/mac_addrs.txt','w') as out0:
-        print >>out0,out
 
-    #upload to server
+def dump_mac_addr():
+    if PC_test:
+        local_log_file = 'mac_addrs.txt'
+        json_file = 'data.json'
+    else:
+        local_log_file = '/home/pi/rpi_sniff2.0/mac_addrs.txt'
+        json_file = '/home/pi/rpi_sniff2.0/data.json'
+
+    time.sleep(gathering_time)
+    # output to local log file
+    out_content = ''
+    for dev in device_list:
+        out_content = out_content + dev.myprint() + '\n'
+    with open(local_log_file, 'w') as log_file:
+        print >> log_file, out_content
+    print out_content
+
+    # dump to json file
     mac_list = []
     for dev in device_list:
         data = dict()
@@ -59,9 +71,10 @@ def upload_mac():
         data['ssi'] = dev.strength
         data['time'] = dev.last_detected_time
         mac_list.append(data)
-    #upload_post(data)
-    with open ('/home/pi/rpi_sniff2.0/data.json','w') as f:
-        json.dump(mac_list,f)
+
+    with open (json_file, 'w') as f:
+        json.dump(mac_list, f)
+
 
 def main():
     threads = []
@@ -70,12 +83,13 @@ def main():
     gather_thread.start()
     threads.append(gather_thread)
 
-    upload_thread = Thread(target = upload_mac)
+    upload_thread = Thread(target = dump_mac_addr)
     upload_thread.start()
     threads.append(upload_thread)
 
     for t in threads:
         t.join()
+
 
 if __name__ =='__main__':
     main()
