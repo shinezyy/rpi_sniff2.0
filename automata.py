@@ -4,92 +4,86 @@ import os
 import subprocess
 import time
 
-time2reboot = 30
+time_before_reboot = 30
 
-fail_count = 0
-#ensure wifi connected
-while(fail_count<4):
-    s = os.popen("iwconfig").read()
-    if 'Not-Associated' in s:
-        fail_count += 1
-        s = os.popen("iwconfig wlan0 essid NJU-WLAN").read()
-        time.sleep(1.5)
-        #s = os.popen("ifconfig wlan0 up").read()
+PC_test = True
+
+if PC_test:
+    work_dir = './'
+else:
+    work_dir = '/home/pi/rpi_sniff2.0/'
+
+log_file = 'log.txt'
+error_dump_file = 'error.txt'
+stop_file = 'stop.txt'
+
+
+def try_many_times(func, times):
+    # func: return bool, string
+    # bool to indicate whether successfully done
+    # string to Error dump
+
+    assert times > 0
+    suc = False
+    error_msg = 'Not tried !'
+    for i in range(0, times):
+        suc, error_msg = func()
+        if suc:
+            return True
+    if not suc:
+        with open(error_dump_file, 'w') as edf:
+            print >> edf, error_msg
+        return False
+
+
+def connected_wifi():
+    ret = os.popen("iwconfig").read()
+    if 'Not-Associated' not in ret:
+        return True, ''
+    # not connected yet
+    ret = os.popen("iwconfig wlan0 essid NJU-WLAN").read()
+    if 'Not-Associated' not in ret:
+        return True, ''
     else:
-        fail_count = 0
-        break
-if(fail_count>=4):
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('failed @ boot connecting wifi\n')
-    f.close()
-    time.sleep(time2reboot)
-    s = os.popen("reboot")
-#ensure gain ip
-while(fail_count<=3):
-    s = os.popen("ifconfig").read()
-    if '172' in s:
-        fail_count = 0
-        break
+        return False, 'Failed to connect NJU WLAN'
+
+
+def got_ip():
+    ret = os.popen("ifconfig").read()
+    if '172' in ret:
+        return True, ''
+    # not got yet
+    ret = os.popen("dhclient wlan0")
+    if '172' in ret:
+        return True, ''
     else:
-        fail_count += 1
-        s = os.popen("dhclient wlan0")
-        time.sleep(2)
-if(fail_count>=3):
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('failed @ boot gain ip\n')
-    f.close()
-    time.sleep(time2reboot)
-    s = os.popen("reboot")
+        return False, 'Failed to got ip from NJU WLAN'
 
-os.popen("ip route > /home/pi/rpi_sniff2.0/route_boot1_log.txt")
-#ensure connect vpn:
-while(fail_count<=3):
-    s = os.popen("pon shinez").read()
-    time.sleep(6)
-    s = os.popen("ifconfig").read()
-    if 'ppp0' in s:
-        fail_count = 0
+
+def get_current_time():
+    global work_dir
+    global log_file
+    not_used1 = os.popen("/etc/init.d/ntp stop").read()
+    ntp_msg = os.popen("ntpdate -u time.windows.com").read()
+    with open(work_dir + log_file, 'a') as lf:
+        lf.write('ntp msg:\n')
+        lf.write(ntp_msg)
+        lf.write('\n')
+
+
+def stop():
+    global work_dir, stop_file
+    with open(work_dir + stop_file) as sf:
+        first_line = sf.readline()
+        if '1' in first_line:
+            return True
+        else:
+            return False
+
+
+while True:
+    if stop():
         break
-    else:
-        fail_count += 1
-if(fail_count>=3):
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('failed @ boot connect vpn\n')
-    f.close()
-    time.sleep(time2reboot)
-    s = os.popen("reboot")
-os.popen("ifconfig > /home/pi/rpi_sniff2.0/if_boot_log.txt")
-os.popen("ip route > /home/pi/rpi_sniff2.0/route_boot2_log.txt")
-#set route
-s = os.popen("ip route del default").read()
-while(fail_count<=3):
-    s = os.popen("ip route add default dev ppp0").read()
-    s = os.popen("ip route").read()
-    if 'default' in s:
-        print s
-        fail_count = 0
-        break
-    else:
-        fail_count += 1
-
-if(fail_count>=3):
-    time.sleep(time2reboot)
-    os.popen("reboot")
-
-s = os.popen("resolvconf -d wlan0").read()
-s = os.popen("resolvconf -a ppp0 < /home/pi/vpn_dns").read()
-s = os.popen("/etc/init.d/ntp stop").read()
-s = os.popen("ntpdate -u time.windows.com").read()
-
-f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-f.write('got time\n')
-f.close()
-while(1):
-    stop = open('/home/pi/rpi_sniff2.0/stop.txt');
-    line = stop.readline()
-    if '1' in line:
-        break
-    stop.close()
     s = os.popen("ifconfig").read()
     if 'ppp0' in s:
         s = os.popen("poff shinez")
@@ -110,7 +104,7 @@ while(1):
         f.write('fail @ monitor mode\n')
         f.close()
         
-        time.sleep(time2reboot)
+        time.sleep(time_before_reboot)
         s = os.popen("reboot")
     s = os.popen("ifconfig wlan0 up").read()
     #start sniff
@@ -136,7 +130,7 @@ while(1):
         f.write('failed @ switch to managed mode\n')
         f.close()
 
-        time.sleep(time2reboot)
+        time.sleep(time_before_reboot)
         os.popen("reboot")
     #s = os.popen("/etc/init.d/networking restart").read()
     s = os.popen("iwconfig wlan0 essid NJU-WLAN").read()
@@ -158,7 +152,7 @@ while(1):
         f = open('/home/pi/rpi_sniff2.0/log.txt','a')
         f.write('failed @ connecting wifi\n')
         f.close()
-        time.sleep(time2reboot)
+        time.sleep(time_before_reboot)
         s = os.popen("reboot")
 
     f = open('/home/pi/rpi_sniff2.0/log.txt','a')
@@ -197,7 +191,7 @@ while(1):
         f = open('/home/pi/rpi_sniff2.0/log.txt','a')
         f.write('failed @ gain ip\n')
         f.close()
-        time.sleep(time2reboot)
+        time.sleep(time_before_reboot)
         s = os.popen("reboot")
 
     #DNS
@@ -246,7 +240,7 @@ while(1):
         f = open('/home/pi/rpi_sniff2.0/log.txt','a')
         f.write("can not ping server\n")
         f.close()
-        time.sleep(time2reboot)
+        time.sleep(time_before_reboot)
         os.popen("reboot")
 
     #ensure connect vpn:
@@ -264,7 +258,7 @@ while(1):
         f.write('failed @ connect vpn\n')
         f.close()
         
-        time.sleep(time2reboot)
+        time.sleep(time_before_reboot)
         os.popen("reboot")
     #set route vpn
     s = os.popen("ip route del default")
@@ -282,7 +276,7 @@ while(1):
         f = open('/home/pi/rpi_sniff2.0/log.txt','a')
         f.write('failed @ set route vpn\n')
         f.close()
-        time.sleep(time2reboot)
+        time.sleep(time_before_reboot)
         s = os.popen("reboot")
     
     s = os.popen("resolvconf -d wlan0")
