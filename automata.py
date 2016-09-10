@@ -16,6 +16,8 @@ else:
 log_file = 'log.txt'
 error_dump_file = 'error.txt'
 stop_file = 'stop.txt'
+fault_level = 'no fault'
+wifi_waiting_interval = 5
 
 
 def try_many_times(func, times):
@@ -41,24 +43,29 @@ def log_to_file(msg):
         lf.write(msg + '\n')
 
 
-def connected_wifi():
+def connect_wifi():
     ret = os.popen('iwconfig').read()
     if 'Not-Associated' not in ret:
         return True, ''
     # not connected yet
-    ret = os.popen("iwconfig wlan0 essid NJU-WLAN").read()
+    os.popen("iwconfig wlan0 essid NJU-WLAN").read()
+    time.sleep(wifi_waiting_interval)
+    ret = os.popen('iwconfig').read()
     if 'Not-Associated' not in ret:
         return True, ''
     else:
         return False, 'Failed to connect NJU WLAN'
 
 
-def got_ip():
+def get_ip():
     ret = os.popen("ifconfig").read()
     if '172' in ret:
         return True, ''
     # not got yet
-    ret = os.popen("dhclient wlan0")
+    log_to_file('Is going to dhclient')
+    not_used = os.popen("dhclient wlan0").read()
+    log_to_file('Finished dhclinet')
+    ret = os.popen("ifconfig").read()
     if '172' in ret:
         return True, ''
     else:
@@ -122,31 +129,45 @@ def reboot():
     os.popen('reboot')
 
 
-while True:
-    if stop():
-        break
-    release_ip()
+def try_with_restart(func, times):
+    if not try_many_times(func, times):
+        network_restart()
+        if not try_many_times(switch_monitor_mode(), 3):
+            reboot()
 
-    turn_down_wireless_card()
-    # switch to Monitor mode
-    turn_on_wireless_card()
 
-    # start sniff
-    subprocess.call('/usr/bin/python'+work_dir+'gather.py', shell=True)
-    log_to_file('Gathered mac addresses')
+def main():
+    while True:
+        if stop():
+            break
+        release_ip()
 
-    turn_down_wireless_card()
-    # switch to Managed mode
-    turn_on_wireless_card()
+        turn_down_wireless_card()
 
-    # connect wifi
-    # get ip
+        turn_on_wireless_card()
 
-    # send to server
-    # s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
+        # start sniff
+        subprocess.call('/usr/bin/python'+work_dir+'gather.py', shell=True)
+        log_to_file('Gathered mac addresses')
 
-    time.sleep(1)
-    log_to_file('Is going to upload')
-    subprocess.call('/usr/bin/python' + work_dir + 'upload.py', shell=True)
-    log_to_file('Uploaded')
+        turn_down_wireless_card()
+        try_with_restart(switch_monitor_mode, 3)
+        turn_on_wireless_card()
+
+        # connect wifi
+        try_with_restart(connect_wifi, 5)
+        # get ip
+        try_with_restart(get_ip, 5)
+
+        # send to server
+        # s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
+
+        time.sleep(1)
+        log_to_file('Is going to upload')
+        subprocess.call('/usr/bin/python' + work_dir + 'upload.py', shell=True)
+        log_to_file('Uploaded')
+
+
+if __name__ == '__main__':
+    main()
 
