@@ -23,7 +23,7 @@ def main():
         data = json.load(f)
     for data_dict in data:
         print data_dict
-        upload_post(data_dict)
+        # upload_post(data_dict)
 
 
 if __name__ == '__main__':

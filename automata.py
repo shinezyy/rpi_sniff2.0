@@ -42,7 +42,7 @@ def log_to_file(msg):
 
 
 def connected_wifi():
-    ret = os.popen("iwconfig").read()
+    ret = os.popen('iwconfig').read()
     if 'Not-Associated' not in ret:
         return True, ''
     # not connected yet
@@ -88,11 +88,11 @@ def release_ip():
 
 
 def turn_down_wireless_card():
-    not_used = os.popen("ifconfig wlan0 down").read()
+    os.popen("ifconfig wlan0 down").read()
 
 
 def turn_on_wireless_card():
-    not_used = os.popen("ifconfig wlan0 up").read()
+    os.popen("ifconfig wlan0 up").read()
 
 
 def switch_monitor_mode():
@@ -113,6 +113,15 @@ def switch_managed_mode():
         return False, 'Failed to switch to Managed mode'
 
 
+def network_restart():
+    os.popen("/etc/init.d/networking restart").read()
+
+
+def reboot():
+    time.sleep(time_before_reboot)
+    os.popen('reboot')
+
+
 while True:
     if stop():
         break
@@ -130,148 +139,14 @@ while True:
     # switch to Managed mode
     turn_on_wireless_card()
 
-    #s = os.popen("/etc/init.d/networking restart").read()
-    s = os.popen("iwconfig wlan0 essid NJU-WLAN").read()
-    s = os.popen("ifconfig wlan0 up").read()
-
     # connect wifi
+    # get ip
 
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('is going to dhclient\n')
-    f.close()
+    # send to server
+    # s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
 
-    s = os.popen("dhclient wlan0 -r").read()
-
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('finished  dhclient -r\n')
-    f.close()
-
-    s = os.popen("dhclient wlan0").read()
-
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('finished  dhclient wlan0\n')
-    f.close()
-
-    #ensure gain ip
-    while(fail_count<=3):
-        s = os.popen("ifconfig").read()
-        if '172' in s:
-            os.popen("ifconfig > /home/pi/rpi_sniff2.0/if_log.txt")
-            fail_count = 0
-            break
-        else:
-            fail_count += 1
-            with open('/home/pi/rpi_sniff2.0/log.txt') as log:
-                log.write('dhclient wlan0 -r\n')
-            s = os.popen("dhclient wlan0 -r").read()
-            s = os.popen("dhclient wlan0").read()
-            with open('/home/pi/rpi_sniff2.0/log.txt') as log:
-                log.write('dhcliented wlan0\n')
-            time.sleep(1)
-    if(fail_count>=3):
-        f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-        f.write('failed @ gain ip\n')
-        f.close()
-        time.sleep(time_before_reboot)
-        s = os.popen("reboot")
-
-    #DNS
-    #s = os.popen("ip route add 114.212.0.0/16 dev wlan0")
-    #time.sleep(0.5)
-
-    '''
-    #set wlan0 route
-    s = os.popen("ip route del default").read()
-    while(fail_count<=3):
-        s = os.popen("ip route add default dev wlan0").read()
-        s = os.popen("ip route add 172.26.20.197 dev wlan0").read()
-        s = os.popen("ip route").read()
-        if 'default' in s:
-            print s
-            fail_count = 0
-            break
-        else:
-            fail_count += 1
-    if(fail_count>=3):
-        f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-        f.write('failed @ set route wlan0\n')
-        f.close()
-        time.sleep(time2reboot)
-        s = os.popen("reboot")
-    '''
-
-    #ensure being able to ping server
-    while(fail_count<=6):
-        s = os.popen("ping 172.26.20.197 -c 2").read()
-        if "time=" in s:
-            f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-            f.write('ping server ok\n')
-            f.close()
-            fail_count = 0
-            break
-        else:
-            fail_count += 1
-            f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-            f.write('ping failed \n')
-            f.close()
-            time.sleep(2)
-    if fail_count>=6 :
-        os.popen("ifconfig > /home/pi/rpi_sniff2.0/if_log.txt")
-        os.popen("ip route > /home/pi/rpi_sniff2.0/route_log.txt")
-        f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-        f.write("can not ping server\n")
-        f.close()
-        time.sleep(time_before_reboot)
-        os.popen("reboot")
-
-    #ensure connect vpn:
-    while(fail_count<=3):
-        s = os.popen("pon shinez").read()
-        time.sleep(6)
-        s = os.popen("ifconfig").read()
-        if 'ppp0' in s:
-            fail_count = 0
-            break
-        else:
-            fail_count += 1
-    if(fail_count>=3):
-        f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-        f.write('failed @ connect vpn\n')
-        f.close()
-        
-        time.sleep(time_before_reboot)
-        os.popen("reboot")
-    #set route vpn
-    s = os.popen("ip route del default")
-    time.sleep(3)
-    while(fail_count<=3):
-        s = os.popen("ip route add default dev ppp0").read()
-        time.sleep(1.5)
-        s = os.popen("ip route").read()
-        if 'default' in s:
-            fail_count = 0
-            break
-        else:
-            fail_count += 1
-    if(fail_count>=3):
-        f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-        f.write('failed @ set route vpn\n')
-        f.close()
-        time.sleep(time_before_reboot)
-        s = os.popen("reboot")
-    
-    s = os.popen("resolvconf -d wlan0")
-    s = os.popen("resolvconf -a ppp0 < /home/pi/vpn_dns")
-    #send
-    #s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
-    time.sleep(2)
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('is going to upload\n')
-    f.close()
-    s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/upload.py",shell = True)
-
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('sent\n')
-    f.close()
     time.sleep(1)
+    log_to_file('Is going to upload')
+    subprocess.call('/usr/bin/python' + work_dir + 'upload.py', shell=True)
+    log_to_file('Uploaded')
 
