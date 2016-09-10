@@ -49,6 +49,7 @@ def connect_wifi():
         return True, ''
     # not connected yet
     os.popen("iwconfig wlan0 essid NJU-WLAN").read()
+    # os.popen("iwconfig wlan0 essid Feixun_6ACE60").read()
     time.sleep(wifi_waiting_interval)
     ret = os.popen('iwconfig').read()
     if 'Not-Associated' not in ret:

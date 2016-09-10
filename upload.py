@@ -5,31 +5,35 @@ import urllib2
 import json
 
 PC_test = True
-
+if PC_test:
+    work_dir = './'
+else:
+    work_dir = '/home/pi/rpi_sniff2.0/'
 
 def upload_post(data_dict):
     try:
-        url = 'http://3.raspberrypiserver.sinaapp.com/trainer/pi/'
+        # url = 'http://172.26.204.105:8000/trainer/pi/'
+        url = 'http://192.168.1.100:8000/trainer/pi/'
         # url = 'http://192.168.1.117:8000/update/'
         data_str = urllib.urlencode(data_dict)
         req = urllib2.Request(url,data_str)
         response = urllib2.urlopen(req)
         # print response
     except :
-        with open('/home/pi/rpi_sniff2.0/log.txt','a') as f:
-            f.write('failed to upload')
+        with open(work_dir + 'log.txt','a') as f:
+            f.write('failed to upload\n')
 
 
 def main():
     if PC_test:
         json_file = 'data.json'
     else:
-        json_file = '/home/pi/rpi_sniff2.0/data.json'
+        json_file = work_dir + 'data.json'
     with open(json_file,'r') as f:
         data = json.load(f)
     for data_dict in data:
         print data_dict
-        # upload_post(data_dict)
+        upload_post(data_dict)
 
 
 if __name__ == '__main__':
