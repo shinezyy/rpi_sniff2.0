@@ -4,6 +4,8 @@ import urllib
 import urllib2
 import json
 
+PC_test = True
+
 
 def upload_post(data_dict):
     try:
@@ -19,7 +21,11 @@ def upload_post(data_dict):
 
 
 def main():
-    with open('/home/pi/rpi_sniff2.0/data.json','r') as f:
+    if PC_test:
+        json_file = 'data.json'
+    else:
+        json_file = '/home/pi/rpi_sniff2.0/data.json'
+    with open(json_file,'r') as f:
         data = json.load(f)
     for data_dict in data:
         print data_dict

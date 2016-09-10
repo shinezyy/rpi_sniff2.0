@@ -126,14 +126,19 @@ def network_restart():
 
 def reboot():
     time.sleep(time_before_reboot)
+    log_to_file('Is going to reboot')
     os.popen('reboot')
 
 
 def try_with_restart(func, times):
     if not try_many_times(func, times):
         network_restart()
-        if not try_many_times(switch_monitor_mode(), 3):
+        if not try_many_times(func, 3):
             reboot()
+
+# connect wifi
+# get ip
+# get time
 
 
 def main():
@@ -143,15 +148,15 @@ def main():
         release_ip()
 
         turn_down_wireless_card()
-
+        try_with_restart(switch_monitor_mode, 3)
         turn_on_wireless_card()
 
         # start sniff
-        subprocess.call('/usr/bin/python'+work_dir+'gather.py', shell=True)
+        subprocess.call('/usr/bin/python '+work_dir+'gather.py', shell=True)
         log_to_file('Gathered mac addresses')
 
         turn_down_wireless_card()
-        try_with_restart(switch_monitor_mode, 3)
+        try_with_restart(switch_managed_mode, 3)
         turn_on_wireless_card()
 
         # connect wifi
@@ -164,7 +169,7 @@ def main():
 
         time.sleep(1)
         log_to_file('Is going to upload')
-        subprocess.call('/usr/bin/python' + work_dir + 'upload.py', shell=True)
+        subprocess.call('/usr/bin/python ' + work_dir + 'upload.py', shell=True)
         log_to_file('Uploaded')
 
 
