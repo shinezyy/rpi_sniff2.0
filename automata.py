@@ -36,6 +36,11 @@ def try_many_times(func, times):
         return False
 
 
+def log_to_file(msg):
+    with open(work_dir+log_file, 'a') as lf:
+        lf.write(msg + '\n')
+
+
 def connected_wifi():
     ret = os.popen("iwconfig").read()
     if 'Not-Associated' not in ret:
@@ -61,14 +66,9 @@ def got_ip():
 
 
 def get_current_time():
-    global work_dir
-    global log_file
     not_used1 = os.popen("/etc/init.d/ntp stop").read()
     ntp_msg = os.popen("ntpdate -u time.windows.com").read()
-    with open(work_dir + log_file, 'a') as lf:
-        lf.write('ntp msg:\n')
-        lf.write(ntp_msg)
-        lf.write('\n')
+    log_to_file('ntp msg:\n'+ntp_msg+'\n')
 
 
 def stop():
@@ -81,79 +81,60 @@ def stop():
             return False
 
 
+def release_ip():
+    s = os.popen("ifconfig").read()
+    if '172' in s:
+        os.popen("dhclient wlan0 -r")
+
+
+def turn_down_wireless_card():
+    not_used = os.popen("ifconfig wlan0 down").read()
+
+
+def turn_on_wireless_card():
+    not_used = os.popen("ifconfig wlan0 up").read()
+
+
+def switch_monitor_mode():
+    ret1 = os.popen("iwconfig wlan0 mode monitor").read()
+    ret2 = os.popen("iwconfig").read()
+    if 'Monitor' in ret2:
+        return True, ''
+    else:
+        return False, 'Failed to switch to monitor mode'
+
+
+def switch_managed_mode():
+    ret1 = os.popen("iwconfig wlan0 mode managed").read()
+    ret2 = os.popen("iwconfig").read()
+    if 'Managed' in ret2:
+        return True, ''
+    else:
+        return False, 'Failed to switch to Managed mode'
+
+
 while True:
     if stop():
         break
-    s = os.popen("ifconfig").read()
-    if 'ppp0' in s:
-        s = os.popen("poff shinez")
-    if '172' in s:
-        s = os.popen("dhclient wlan0 -r")
-    s = os.popen("ifconfig wlan0 down").read()
-    #ensure wlan0 Monitor
-    while(fail_count<=3):
-        s = os.popen("iwconfig wlan0 mode monitor").read()
-        res = os.popen("iwconfig").read()
-        if 'Monitor' in res:
-            fail_count = 0
-            break
-        else:
-            fail_count += 1
-    if(fail_count>=3):
-        f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-        f.write('fail @ monitor mode\n')
-        f.close()
-        
-        time.sleep(time_before_reboot)
-        s = os.popen("reboot")
-    s = os.popen("ifconfig wlan0 up").read()
-    #start sniff
-    subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/gather.py",shell = True)
+    release_ip()
 
-    f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-    f.write('gathered\n')
-    f.close()
+    turn_down_wireless_card()
+    # switch to Monitor mode
+    turn_on_wireless_card()
 
-    s = os.popen("ifconfig wlan0 down")
-    #ensure wlan0 Managed
-    while(fail_count<=3):
-        s = os.popen("iwconfig wlan0 mode managed").read()
-        time.sleep(1)
-        res = os.popen("iwconfig").read()
-        if 'Managed' in res:
-            fail_count = 0
-            break
-        else:
-            fail_count += 1
-    if(fail_count>=3):
-        f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-        f.write('failed @ switch to managed mode\n')
-        f.close()
+    # start sniff
+    subprocess.call('/usr/bin/python'+work_dir+'gather.py', shell=True)
+    log_to_file('Gathered mac addresses')
 
-        time.sleep(time_before_reboot)
-        os.popen("reboot")
+    turn_down_wireless_card()
+    # switch to Managed mode
+    turn_on_wireless_card()
+
     #s = os.popen("/etc/init.d/networking restart").read()
     s = os.popen("iwconfig wlan0 essid NJU-WLAN").read()
     s = os.popen("ifconfig wlan0 up").read()
-    time.sleep(2)
-    #ensure wifi connected
-    while(fail_count<=3):
-        s = os.popen("iwconfig").read()
-        if 'Not-Associated' in s:
-            fail_count += 1
-            s = os.popen("iwconfig wlan0 essid NJU-WLAN").read()
-            time.sleep(2)
-            #s = os.popen("ifconfig wlan0 up").read()
-        else:
-            os.popen("iwconfig > /home/pi/rpi_sniff2.0/iw_log.txt")
-            fail_count = 0
-            break
-    if(fail_count>=3):
-        f = open('/home/pi/rpi_sniff2.0/log.txt','a')
-        f.write('failed @ connecting wifi\n')
-        f.close()
-        time.sleep(time_before_reboot)
-        s = os.popen("reboot")
+
+    # connect wifi
 
     f = open('/home/pi/rpi_sniff2.0/log.txt','a')
     f.write('is going to dhclient\n')
