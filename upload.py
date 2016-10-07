@@ -3,8 +3,8 @@
 import urllib
 import urllib2
 import json
+from config import *
 
-PC_test = True
 if PC_test:
     work_dir = './'
 else:
@@ -12,9 +12,7 @@ else:
 
 def upload_post(data_dict):
     try:
-        # url = 'http://172.26.204.105:8000/trainer/pi/'
-        url = 'http://192.168.1.100:8000/trainer/pi/'
-        # url = 'http://192.168.1.117:8000/update/'
+        url = 'http://' + server_ip_addr + '/trainer/pi/'
         data_str = urllib.urlencode(data_dict)
         req = urllib2.Request(url,data_str)
         response = urllib2.urlopen(req)

@@ -3,10 +3,10 @@
 import os
 import subprocess
 import time
+from config import *
 
 time_before_reboot = 30
 
-PC_test = True
 
 if PC_test:
     work_dir = './'

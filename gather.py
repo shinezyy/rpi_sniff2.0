@@ -5,12 +5,12 @@ import json
 from update_time import get_current_minute
 from update_time import get_current_time
 from devices import device
+from config import *
 
 PROBE_REQUEST_TYPE=0
 PROBE_REQUEST_SUBTYPE=4
 update_interval = 100 #minute
 gathering_time = 60
-PC_test = True
 pi_id = 1
 
 device_list = []
