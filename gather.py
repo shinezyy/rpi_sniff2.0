@@ -2,8 +2,8 @@ from scapy.all import *
 from threading import Thread
 import json
 
-from update_time import get_current_minute
-from update_time import get_current_time
+from pitime import get_current_minute
+from pitime import get_current_time
 from devices import device
 from config import *
 
