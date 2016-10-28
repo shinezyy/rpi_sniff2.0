@@ -6,6 +6,7 @@ import time
 from config import *
 from upload import upload
 from pitime import get_current_time
+from pitime import syn_time
 
 time_before_reboot = 30
 
@@ -158,7 +159,7 @@ def main():
     # get ip
     try_with_restart(get_ip, 5)
     # get time
-    try_with_restart(get_current_time, 5)
+    try_with_restart(syn_time, 5)
 
     while True:
         if stop():
