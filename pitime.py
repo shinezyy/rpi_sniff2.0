@@ -20,7 +20,6 @@ def get_current_minute():
 def get_current_time():
     not_used1 = os.popen("/etc/init.d/ntp stop").read()
     ntp_msg = os.popen("ntpdate -u ntp.nju.edu.cn").read()
-    log_to_file('ntp msg:\n'+ntp_msg+'\n')
 
 
 def syn_time():
