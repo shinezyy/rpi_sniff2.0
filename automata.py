@@ -5,7 +5,6 @@ import subprocess
 import time
 from config import *
 from upload import upload
-from pitime import get_current_time
 from pitime import syn_time
 
 time_before_reboot = 30
@@ -75,12 +74,6 @@ def get_ip():
         return True, ''
     else:
         return False, 'Failed to got ip from NJU WLAN'
-
-
-def get_current_time():
-    not_used1 = os.popen("/etc/init.d/ntp stop").read()
-    ntp_msg = os.popen("ntpdate -u time.windows.com").read()
-    log_to_file('ntp msg:\n'+ntp_msg+'\n')
 
 
 def stop():
