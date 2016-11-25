@@ -6,6 +6,14 @@ import json
 from config import *
 
 
+def connected():
+    try:
+        urllib2.urlopen('http://' + server_ip_addr, timeout=1)
+        return True
+    except urllib2.URLError as err:
+        return False
+
+
 def upload_post(data_dict):
     if PC_test:
         work_dir = './'
@@ -39,15 +47,19 @@ def upload():
 
     for data_dict in data:
         print 'Is uploading', data_dict
-        if send_to_server:
-            ret = upload_post(data_dict)
-            while not ret:
-                falure_time += 1
+        suc = False
+        while send_to_server and not suc:
+            try:
                 ret = upload_post(data_dict)
-            else:
-                falure_time = 0
+                if not ret:
+                    falure_time += 1
+                else:
+                    falure_time = 0
+                    suc = True
+            except:
+                falure_time += 1
             if falure_time > 10:
                 return False, 'Too many errors while uploading'
-    
+
     return True, ''
 

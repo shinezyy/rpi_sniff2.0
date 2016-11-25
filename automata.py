@@ -5,6 +5,7 @@ import subprocess
 import time
 from config import *
 from upload import upload
+from upload import connected
 from pitime import syn_time
 
 time_before_reboot = 30
@@ -37,12 +38,14 @@ def try_many_times(func, times, handle=None):
         elif handle:
             handle()
     if not suc:
-        with open(error_dump_file, 'w') as edf:
+        with open(work_dir+error_dump_file, 'w') as edf:
             print >> edf, error_msg
         return False
 
 
 def log_to_file(msg):
+    if PC_test:
+        print msg
     with open(work_dir+log_file, 'a') as lf:
         lf.write(msg + '\n')
 
@@ -52,7 +55,7 @@ def connect_wifi():
     if 'Not-Associated' not in ret:
         return True, ''
     # not connected yet
-    os.popen("iwconfig wlan0 essid NJU-WLAN").read()
+    os.popen("iwconfig wlan0 essid "+WLAN_SSID).read()
     time.sleep(wifi_waiting_interval)
     ret = os.popen('iwconfig').read()
     if 'Not-Associated' not in ret:
@@ -64,16 +67,19 @@ def connect_wifi():
 def get_ip():
     ret = os.popen("ifconfig").read()
     if '172' in ret:
-        return True, ''
+        if connected():
+            return True, ''
+        else:
+            not_used = os.popen("dhclient wlan0 -r").read()
     # not got yet
     log_to_file('Is going to dhclient')
     not_used = os.popen("dhclient wlan0").read()
-    log_to_file('Finished dhclinet')
+    log_to_file('Finished dhclient')
     ret = os.popen("ifconfig").read()
-    if '172' in ret:
-        return True, ''
+    if '172' in ret and connected():
+            return True, ''
     else:
-        return False, 'Failed to got ip from NJU WLAN'
+        return False, 'Failed to got ip from NJU WLAN or connect to server.'
 
 
 def stop():
@@ -166,8 +172,11 @@ def main():
         # send to server
         # s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
         time.sleep(1)
-        log_to_file('Is going to upload')
-        try_with_restart(upload, 3)
+        if connected():
+            log_to_file('Network is OK, and is going to upload!')
+            try_with_restart(upload, 3, connect_wifi)
+        else:
+            try_with_restart(get_ip, 5)
 
 
 if __name__ == '__main__':
