@@ -3,12 +3,16 @@
 import os
 import subprocess
 import time
+from subprocess import check_output
 from config import *
 from upload import upload
 from upload import connected
 from pitime import syn_time
+from time import gmtime, strftime
 
 time_before_reboot = 30
+
+init()
 
 
 if PC_test:
@@ -47,17 +51,17 @@ def log_to_file(msg):
     if PC_test:
         print msg
     with open(work_dir+log_file, 'a') as lf:
-        lf.write(msg + '\n')
+        lf.write(msg + '-----' + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '\n')
 
 
 def connect_wifi():
-    ret = os.popen('iwconfig').read()
+    ret = check_output(['iwconfig'])
     if 'Not-Associated' not in ret:
         return True, ''
     # not connected yet
-    os.popen("iwconfig wlan0 essid "+WLAN_SSID).read()
+    not_used = check_output(("iwconfig wlan0 essid "+WLAN_SSID).split())
     time.sleep(wifi_waiting_interval)
-    ret = os.popen('iwconfig').read()
+    ret = check_output(['iwconfig'])
     if 'Not-Associated' not in ret:
         return True, ''
     else:
@@ -65,21 +69,26 @@ def connect_wifi():
 
 
 def get_ip():
-    ret = os.popen("ifconfig").read()
-    if '172' in ret:
+    ret = check_output("ifconfig")
+    if ip_start in ret:
         if connected():
             return True, ''
         else:
-            not_used = os.popen("dhclient wlan0 -r").read()
+            log_to_file("Not connected to server, release IP")
+            not_used = check_output("dhclient wlan0 -r".split())
     # not got yet
-    log_to_file('Is going to dhclient')
-    not_used = os.popen("dhclient wlan0").read()
+    not_used = check_output("dhclient wlan0".split())
+
     log_to_file('Finished dhclient')
-    ret = os.popen("ifconfig").read()
-    if '172' in ret and connected():
+    ret = check_output("ifconfig")
+    if ip_start in ret and connected():
             return True, ''
+    elif ip_start in ret and not connected():
+        log_to_file('Got IP but cannot connect to server.')
+        return False, 'Got IP but cannot connect to server.'
     else:
-        return False, 'Failed to got ip from NJU WLAN or connect to server.'
+        log_to_file('Cannot get IP')
+        return False, 'Cannot get IP'
 
 
 def stop():
@@ -93,22 +102,22 @@ def stop():
 
 
 def release_ip():
-    s = os.popen("ifconfig").read()
-    if '172' in s:
-        os.popen("dhclient wlan0 -r")
+    s = check_output(['ifconfig'])
+    if ip_start in s:
+        not_used = check_output("dhclient wlan0 -r".split())
 
 
 def turn_down_wireless_card():
-    os.popen("ifconfig wlan1 down").read()
+    not_used = check_output("ifconfig wlan1 down".split())
 
 
 def turn_on_wireless_card():
-    os.popen("ifconfig wlan1 up").read()
+    not_used = check_output("ifconfig wlan1 up".split())
 
 
 def switch_monitor_mode():
-    ret1 = os.popen("iwconfig wlan1 mode monitor").read()
-    ret2 = os.popen("iwconfig").read()
+    ret1 = check_output("iwconfig wlan1 mode monitor".split())
+    ret2 = check_output(["iwconfig"])
     if 'Monitor' in ret2:
         return True, ''
     else:
@@ -116,8 +125,8 @@ def switch_monitor_mode():
 
 
 def switch_managed_mode():
-    ret1 = os.popen("iwconfig wlan1 mode managed").read()
-    ret2 = os.popen("iwconfig").read()
+    not_used = check_output("iwconfig wlan1 mode managed".split())
+    ret2 = check_output("iwconfig".split())
     if 'Managed' in ret2:
         return True, ''
     else:
@@ -125,7 +134,7 @@ def switch_managed_mode():
 
 
 def network_restart():
-    os.popen("/etc/init.d/networking restart").read()
+    not_used = check_output("/etc/init.d/networking restart".split())
 
 
 def reboot():
@@ -134,7 +143,7 @@ def reboot():
         return
     log_to_file('Is going to reboot')
     time.sleep(time_before_reboot)
-    os.popen('reboot')
+    subprocess.Popen('reboot', shell=True)
 
 
 def try_with_restart(func, times, handle=None):
@@ -165,12 +174,10 @@ def main():
             break
 
         # start sniff
-        subprocess.call('/usr/bin/python '+work_dir+'gather.py', shell=True)
+        check_output(['/usr/bin/python', work_dir+'gather.py'])
         log_to_file('Gathered mac addresses')
 
-
         # send to server
-        # s = subprocess.call("/usr/bin/python /home/pi/rpi_sniff2.0/send_mail.py",shell = True)
         time.sleep(1)
         if connected():
             log_to_file('Network is OK, and is going to upload!')
