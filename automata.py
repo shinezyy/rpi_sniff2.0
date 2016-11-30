@@ -172,7 +172,7 @@ def main():
             break
 
         # start sniff
-        check_output(['/usr/bin/python', work_dir+'gather.py'])
+        unused = check_output(['/usr/bin/python', work_dir+'gather.py'])
         log_to_file('Gathered mac addresses')
 
         # send to server
