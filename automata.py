@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-import os
-import subprocess
 import time
 from subprocess import check_output
 from config import *
@@ -143,7 +141,7 @@ def reboot():
         return
     log_to_file('Is going to reboot')
     time.sleep(time_before_reboot)
-    subprocess.Popen('reboot', shell=True)
+    check_output(['reboot'])
 
 
 def try_with_restart(func, times, handle=None):
