@@ -32,25 +32,25 @@ def add2list(pkt):
 
 
 def mac_gather(ifc):
-    sniff(iface=ifc, prn=packet_handler, timeout=gathering_time)
+    sniff(iface=ifc, prn=packet_handler, timeout=c.gathering_time)
 
 
 def del_outdated_device():
     current_time = get_current_minute()
     for dev in device_list:
-        if current_time - dev.last_detected_time > update_interval:
+        if current_time - dev.last_detected_time > c.update_interval:
             device_list.remove(dev)
 
 
 def dump_mac_addr():
-    if PC_test:
+    if c.PC_test:
         local_log_file = 'mac_addrs.txt'
         json_file = 'data.json'
     else:
         local_log_file = '/home/pi/rpi_sniff2.0/mac_addrs.txt'
         json_file = '/home/pi/rpi_sniff2.0/data.json'
 
-    time.sleep(gathering_time)
+    time.sleep(c.gathering_time)
     # output to local log file
     out_content = ''
     for dev in device_list:
@@ -63,7 +63,7 @@ def dump_mac_addr():
     mac_list = []
     for dev in device_list:
         data = dict()
-        data['no'] = pi_id
+        data['no'] = c.pi_id
         data['mac'] = dev.mac_addr
         data['ssi'] = dev.strength
         data['time'] = dev.last_detected_time

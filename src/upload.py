@@ -8,20 +8,20 @@ from config import *
 
 def connected():
     try:
-        urllib2.urlopen('http://' + server_ip_addr, timeout=1)
+        urllib2.urlopen('http://' + c.server_ip_addr, timeout=1)
         return True
     except urllib2.URLError as err:
         return False
 
 
 def upload_post(data_dict):
-    if PC_test:
+    if c.PC_test:
         work_dir = './'
     else:
         work_dir = '/home/pi/rpi_sniff2.0/'
 
     try:
-        url = 'http://' + server_ip_addr + '/trainer/pi/'
+        url = 'http://' + c.server_ip_addr + '/trainer/pi/'
         data_str = urllib.urlencode(data_dict)
         req = urllib2.Request(url,data_str)
         response = urllib2.urlopen(req)
@@ -33,7 +33,7 @@ def upload_post(data_dict):
 
 
 def upload():
-    if PC_test:
+    if c.PC_test:
         work_dir = './'
     else:
         work_dir = '/home/pi/rpi_sniff2.0/'
@@ -48,7 +48,7 @@ def upload():
     for data_dict in data:
         print 'Is uploading', data_dict
         suc = False
-        while send_to_server and not suc:
+        while c.send_to_server and not suc:
             try:
                 ret = upload_post(data_dict)
                 if not ret:

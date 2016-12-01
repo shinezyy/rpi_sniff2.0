@@ -2,7 +2,7 @@
 
 import time
 from subprocess import check_output
-from config import *
+from config import c
 from upload import upload
 from upload import connected
 from pitime import syn_time
@@ -10,13 +10,12 @@ from time import gmtime, strftime
 
 time_before_reboot = 30
 
-init()
+c.init()
 
-
-if PC_test:
+if c.PC_test:
     work_dir = './'
 else:
-    work_dir = '/home/pi/rpi_sniff2.0/'
+    work_dir = '/home/pi/src/'
 
 log_file = 'log.txt'
 error_dump_file = 'error.txt'
@@ -46,7 +45,7 @@ def try_many_times(func, times, handle=None):
 
 
 def log_to_file(msg):
-    if PC_test:
+    if c.PC_test:
         print msg
     with open(work_dir+log_file, 'a') as lf:
         lf.write(msg + '-----' + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '\n')
@@ -57,7 +56,8 @@ def connect_wifi():
     if 'Not-Associated' not in ret:
         return True, ''
     # not connected yet
-    not_used = check_output(("iwconfig wlan0 essid "+WLAN_SSID).split())
+    log_to_file('Connecting '+c.WLAN_SSID)
+    not_used = check_output(("iwconfig wlan0 essid "+c.WLAN_SSID).split())
     time.sleep(wifi_waiting_interval)
     ret = check_output(['iwconfig'])
     if 'Not-Associated' not in ret:
@@ -68,7 +68,7 @@ def connect_wifi():
 
 def get_ip():
     ret = check_output("ifconfig")
-    if ip_start in ret:
+    if c.ip_start in ret:
         if connected():
             return True, ''
         else:
@@ -79,9 +79,9 @@ def get_ip():
 
     log_to_file('Finished dhclient')
     ret = check_output("ifconfig")
-    if ip_start in ret and connected():
+    if c.ip_start in ret and connected():
             return True, ''
-    elif ip_start in ret and not connected():
+    elif c.ip_start in ret and not connected():
         log_to_file('Got IP but cannot connect to server.')
         return False, 'Got IP but cannot connect to server.'
     else:
@@ -101,7 +101,7 @@ def stop():
 
 def release_ip():
     s = check_output(['ifconfig'])
-    if ip_start in s:
+    if c.ip_start in s:
         not_used = check_output("dhclient wlan0 -r".split())
 
 
@@ -136,7 +136,7 @@ def network_restart():
 
 
 def reboot():
-    if PC_test:
+    if c.PC_test:
         log_to_file('Stop because of too many errors!')
         return
     log_to_file('Is going to reboot')
