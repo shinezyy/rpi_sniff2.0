@@ -16,12 +16,6 @@ def get_current_time():
 def get_current_minute():
     return time.time()
 
-
-def get_current_time():
-    not_used1 = os.popen("/etc/init.d/ntp stop").read()
-    ntp_msg = os.popen("ntpdate -u ntp.nju.edu.cn").read()
-
-
 def syn_time():
     url = 'http://' + c.server_ip_addr + '/syn/'
     req = urllib2.Request(url)
