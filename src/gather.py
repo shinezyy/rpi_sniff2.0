@@ -74,6 +74,7 @@ def dump_mac_addr():
 
 
 def main():
+    c.init()
     threads = []
 
     gather_thread = Thread(target = mac_gather,args=('wlan1',))

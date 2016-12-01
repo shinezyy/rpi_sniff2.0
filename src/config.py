@@ -15,7 +15,7 @@ class conf:
 
     def init(self):
         self.pi_id = int(os.environ['pi_id'])
-
+        print self.pi_id
         if self.test_in_lab:
             self.WLAN_SSID = "124"
             self.ip_start = '114'
