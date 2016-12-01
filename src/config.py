@@ -2,15 +2,16 @@ import os
 
 class conf:
 
-    PC_test = True
-    server_ip_addr = '172.26.119.237:18000'
-    send_to_server = True
-    gathering_time = 90
-    pi_id = 1
-    update_interval = 500 #minute
-    test_in_lab = True
-    WLAN_SSID = ''
-    ip_start = ''
+    def __init__(self):
+        self.PC_test = True
+        self.server_ip_addr = '172.26.119.237:18000'
+        self.send_to_server = True
+        self.gathering_time = 90
+        self.pi_id = 1
+        self.update_interval = 500 #minute
+        self.test_in_lab = True
+        self.WLAN_SSID = ''
+        self.ip_start = ''
 
     def init(self):
         self.pi_id = int(os.environ['pi_id'])
