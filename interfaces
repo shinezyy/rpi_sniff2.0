@@ -1,0 +1,26 @@
+# Please note that this file is written to be used with dhcpcd.
+# For static IP, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'.
+
+auto lo
+iface lo inet loopback
+
+auto eth0
+allow-hotplug eth0
+#iface eth0 inet dhcp
+ifconfig eth0 192.168.99.102 netmask 255.255.255.0
+
+auto wlan
+iface wlan0 inet dhcp
+#wireless-essid NJU-WLAN
+#wireless-key
+
+#previous
+#auto wlan0
+#allow-hotplug wlan0
+#iface wlan0 inet manual
+#wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+
+#auto wlan1
+#allow-hotplug wlan1
+#iface wlan1 inet manual
+#wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
