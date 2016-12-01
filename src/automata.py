@@ -12,11 +12,7 @@ time_before_reboot = 30
 
 c.init()
 
-if c.PC_test:
-    work_dir = './'
-else:
-    work_dir = '/home/pi/src/'
-
+work_dir = c.work_dir
 log_file = 'log.txt'
 error_dump_file = 'error.txt'
 stop_file = 'stop.txt'

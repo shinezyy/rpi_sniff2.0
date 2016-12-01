@@ -12,6 +12,8 @@ PROBE_REQUEST_SUBTYPE=4
 
 device_list = []
 
+gather_c = conf()
+work_dir = gather_c.work_dir
 
 def packet_handler(pkt):
     if pkt.haslayer(Dot11):
@@ -43,12 +45,8 @@ def del_outdated_device():
 
 
 def dump_mac_addr():
-    if c.PC_test:
-        local_log_file = 'mac_addrs.txt'
-        json_file = 'data.json'
-    else:
-        local_log_file = '/home/pi/rpi_sniff2.0/mac_addrs.txt'
-        json_file = '/home/pi/rpi_sniff2.0/data.json'
+    local_log_file = work_dir + 'mac_addrs.txt'
+    json_file = work_dir + 'data.json'
 
     time.sleep(c.gathering_time)
     # output to local log file

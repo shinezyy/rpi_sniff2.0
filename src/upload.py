@@ -5,7 +5,6 @@ import urllib2
 import json
 from config import *
 
-
 def connected():
     try:
         urllib2.urlopen('http://' + c.server_ip_addr, timeout=1)
@@ -15,10 +14,6 @@ def connected():
 
 
 def upload_post(data_dict):
-    if c.PC_test:
-        work_dir = './'
-    else:
-        work_dir = '/home/pi/rpi_sniff2.0/'
 
     try:
         url = 'http://' + c.server_ip_addr + '/trainer/pi/'
@@ -33,10 +28,8 @@ def upload_post(data_dict):
 
 
 def upload():
-    if c.PC_test:
-        work_dir = './'
-    else:
-        work_dir = '/home/pi/rpi_sniff2.0/'
+    upload_c = conf()
+    work_dir = c.work_dir
 
     json_file = work_dir + 'data.json'
 
