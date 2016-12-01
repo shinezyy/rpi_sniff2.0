@@ -1,12 +1,12 @@
 import os
 
-PC_test = True
+PC_test = False
 server_ip_addr = '172.26.119.237:18000'
 send_to_server = True
 gathering_time = 90
 pi_id = 1
 update_interval = 500 #minute
-test_in_lab = True
+test_in_lab = False
 WLAN_SSID = ''
 ip_start = ''
 
