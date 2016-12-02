@@ -9,7 +9,7 @@ def connected():
     try:
         urllib2.urlopen('http://' + c.server_ip_addr, timeout=1)
         return True
-    except urllib2.URLError as err:
+    except:
         return False
 
 
